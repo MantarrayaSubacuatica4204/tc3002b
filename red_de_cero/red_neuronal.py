@@ -2,6 +2,7 @@ import math
 from random import shuffle
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 from scipy import stats
 
 # ==========================================
@@ -128,6 +129,52 @@ def circulo(num_datos=100, R=1, minimo=0, maximo=1):
   return df
 
 
+def guardar_pesos_excel(red_neuronal, filename='pesos_red_neuronal.xlsx'):
+  """Exporta los pesos (W) y sesgos (b) de cada capa a un archivo Excel."""
+  registros_planos = []
+
+  with pd.ExcelWriter(filename, engine='openpyxl') as writer:
+    for idx, c in enumerate(red_neuronal):
+      num_capa = idx + 1
+      n_in, n_out = c.W.shape
+
+      cols = [f'Neurona_{j+1}' for j in range(n_out)]
+      idx_w = [f'Entrada_{i+1}' for i in range(n_in)]
+
+      # Pesos W y Sesgos b organizados
+      df_w = pd.DataFrame(c.W, index=idx_w, columns=cols)
+      df_b = pd.DataFrame(c.b, index=['Sesgo (b)'], columns=cols)
+
+      # Hoja individual por cada capa con su matriz completa
+      df_capa = pd.concat([df_w, df_b])
+      df_capa.to_excel(writer, sheet_name=f'Capa_{num_capa}')
+
+      # Registros para hoja resumen consolidada
+      for i in range(n_in):
+        for j in range(n_out):
+          registros_planos.append({
+              'Capa': f'Capa {num_capa}',
+              'Tipo': 'Peso (W)',
+              'Origen': f'Entrada {i+1}',
+              'Destino': f'Neurona {j+1}',
+              'Valor': c.W[i, j],
+          })
+      for j in range(n_out):
+        registros_planos.append({
+            'Capa': f'Capa {num_capa}',
+            'Tipo': 'Sesgo (b)',
+            'Origen': 'N/A',
+            'Destino': f'Neurona {j+1}',
+            'Valor': c.b[0, j],
+        })
+
+    # Hoja tabular consolidada
+    df_resumen = pd.DataFrame(registros_planos)
+    df_resumen.to_excel(writer, sheet_name='Todos_los_Pesos', index=False)
+
+  print(f'Pesos guardados exitosamente en: {filename}')
+
+
 if __name__ == '__main__':
   # Generación de datos de prueba
   datos_1 = circulo(num_datos=150, R=2)
@@ -165,3 +212,7 @@ if __name__ == '__main__':
   plt.xlabel('Época')
   plt.ylabel('Error Cuadrático Medio (MSE)')
   plt.savefig('evolucion_error.png')
+
+  # Exportar pesos generados a Excel
+  guardar_pesos_excel(red_neuronal)
+

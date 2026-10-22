@@ -1,2 +1,13 @@
-Correr docker con volumen para guardar la imagen generada
-  docker run --rm -v ${PWD}:/app red-neuronal
+# Red Neuronal desde Cero
+
+## Reconstruir la imagen de Docker
+```powershell
+docker build -t red-neuronal .
+```
+
+## Correr Docker con volumen
+Montar el volumen para guardar la gráfica generada (`evolucion_error.png`) y el archivo Excel con los pesos (`pesos_red_neuronal.xlsx`):
+
+```powershell
+docker run --rm -v ${PWD}:/app red-neuronal
+```
