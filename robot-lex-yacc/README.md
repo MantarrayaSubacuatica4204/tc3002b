@@ -1,7 +1,7 @@
 # Intérprete robot/dron con LEX y YACC
 
 **Autor:** Jaime Trujillo Ruiz
-**Curso:** Diseño de Compiladores — Tarea 1 (intérprete)
+**Curso:** Diseño de Compiladores
 
 Intérprete de un lenguaje sencillo para programar un robot o un dron. Usa
 **flex** (LEX) para el análisis léxico y **bison** (YACC) para el análisis
@@ -78,3 +78,7 @@ make
 ```
 
 Si hay errores léxicos o sintácticos, el programa no se ejecuta.
+
+
+Dockerhub:
+https://hub.docker.com/r/mantarrayasubacuatica4204/robot-lex-yacc
