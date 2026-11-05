@@ -1,0 +1,3 @@
+# Error de ejecución: el dron intenta bajar debajo del suelo
+subir 2;
+bajar 5;

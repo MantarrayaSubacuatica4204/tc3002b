@@ -4,12 +4,12 @@
 CC     = gcc
 CFLAGS = -Wall -Wextra -g
 
-OBJS = robot.tab.o lex.yy.o ast.o interp.o main.o
+OBJS = robot.tab.o lex.yy.o main.o
 
 robot: $(OBJS)
 	$(CC) $(CFLAGS) -o robot $(OBJS) -lm
 
-robot.tab.c robot.tab.h: robot.y ast.h
+robot.tab.c robot.tab.h: robot.y
 	bison -d -Wall robot.y -o robot.tab.c
 
 lex.yy.c: robot.l robot.tab.h
@@ -21,13 +21,7 @@ robot.tab.o: robot.tab.c
 lex.yy.o: lex.yy.c robot.tab.h
 	$(CC) $(CFLAGS) -c lex.yy.c
 
-ast.o: ast.c ast.h
-	$(CC) $(CFLAGS) -c ast.c
-
-interp.o: interp.c interp.h ast.h
-	$(CC) $(CFLAGS) -c interp.c
-
-main.o: main.c ast.h interp.h
+main.o: main.c
 	$(CC) $(CFLAGS) -c main.c
 
 clean:

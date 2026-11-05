@@ -1,7 +1,10 @@
 # Demo: el robot dibuja un cuadrado de lado 10 y regresa al origen
-lado = 10;
-repetir 4 {
-    avanzar lado;
-    mostrar;
-    girar derecha;
-}
+avanzar 10;
+girar derecha;
+avanzar 10;
+girar derecha;
+avanzar 10;
+girar derecha;
+avanzar 10;
+girar derecha;
+mostrar;

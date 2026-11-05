@@ -3,37 +3,40 @@
 **Autor:** Jaime Trujillo Ruiz
 **Curso:** Diseño de Compiladores — Tarea 1 (intérprete)
 
-Intérprete de un lenguaje sencillo para programar un robot o un dron. Está
-construido con **flex** (LEX) para el análisis léxico y **bison** (YACC) para
-el análisis sintáctico, y se ejecuta dentro de un contenedor Docker.
+Intérprete de un lenguaje sencillo para programar un robot o un dron. Usa
+**flex** (LEX) para el análisis léxico y **bison** (YACC) para el análisis
+sintáctico. Se ejecuta dentro de un contenedor Docker.
 
 ## Lenguaje
 
-| Instrucción               | Efecto                                                  |
-|---------------------------|---------------------------------------------------------|
-| `avanzar expr;`           | Avanza `expr` unidades en la dirección actual           |
-| `retroceder expr;`        | Retrocede `expr` unidades                               |
-| `girar izquierda;`        | Gira 90° a la izquierda                                 |
-| `girar derecha expr;`     | Gira `expr` grados a la derecha                         |
-| `subir expr;`             | Sube `expr` metros (dron)                               |
-| `bajar expr;`             | Baja `expr` metros (dron); no puede quedar bajo el suelo |
-| `repetir expr { ... }`    | Ejecuta el bloque `expr` veces                          |
-| `mostrar;`                | Imprime la posición actual                              |
-| `variable = expr;`        | Asigna un valor (`+ - * /`, paréntesis y negativos)     |
-| `# comentario`            | Se ignora hasta el fin de línea                         |
+| Instrucción             | Efecto                                                    |
+|-------------------------|-----------------------------------------------------------|
+| `avanzar N;`            | Avanza N unidades en la dirección actual                  |
+| `retroceder N;`         | Retrocede N unidades                                      |
+| `girar izquierda;`      | Gira 90° a la izquierda                                   |
+| `girar derecha N;`      | Gira N grados a la derecha                                |
+| `subir N;`              | Sube N metros (dron)                                      |
+| `bajar N;`              | Baja N metros (dron); no puede quedar bajo el suelo       |
+| `mostrar;`              | Imprime la posición actual                                |
+| `# comentario`          | Se ignora hasta el fin de línea                           |
+
+`N` es un número positivo (por ejemplo `10` o `2.5`).
 
 El robot inicia en `(0, 0)` con rumbo `0` (norte, eje +y). Un rumbo de `90`
 apunta al este (eje +x). Al terminar, el intérprete imprime la posición final.
 
-Ejemplo (`ejemplos/demo.rob`):
+Ejemplo (`ejemplos/demo.rob`), un cuadrado de lado 10:
 
 ```
-lado = 10;
-repetir 4 {
-    avanzar lado;
-    mostrar;
-    girar derecha;
-}
+avanzar 10;
+girar derecha;
+avanzar 10;
+girar derecha;
+avanzar 10;
+girar derecha;
+avanzar 10;
+girar derecha;
+mostrar;
 ```
 
 ## Estructura
@@ -41,14 +44,21 @@ repetir 4 {
 ```
 robot-lex-yacc/
 ├── robot.l          # Analizador léxico (flex)
-├── robot.y          # Gramática y precedencias (bison)
-├── ast.h / ast.c    # Árbol de sintaxis abstracta
-├── interp.h / .c    # Intérprete: recorre el AST y mueve el robot/dron
-├── main.c           # Punto de entrada
+├── robot.y          # Gramática; cada instrucción se ejecuta en su acción
+├── main.c           # Punto de entrada: revisa sintaxis y luego ejecuta
 ├── Makefile         # Compilación local
 ├── Dockerfile       # Imagen Docker con flex, bison y gcc
 └── ejemplos/        # Programas de prueba (correctos y con errores)
 ```
+
+### Cómo funciona
+
+El programa se lee **dos veces**:
+
+1. **Primera pasada:** solo revisa léxico y sintaxis. No mueve nada.
+2. **Segunda pasada:** si no hubo errores, ejecuta las instrucciones.
+
+Así, un programa con errores no se ejecuta a medias.
 
 ## Compilar y ejecutar con Docker
 
@@ -73,21 +83,14 @@ Reemplaza `TU_USUARIO` por tu usuario de Docker Hub:
 
 ```bash
 docker login
-docker tag robot-lex-yacc:local TU_USUARIO/robot-lex-yacc:1.0
-docker push TU_USUARIO/robot-lex-yacc:1.0
-```
-
-Para que otra persona la ejecute:
-
-```bash
-docker run --rm TU_USUARIO/robot-lex-yacc:1.0 /app/ejemplos/dron.rob
+docker tag robot-lex-yacc:local TU_USUARIO/robot-lex-yacc:2.0
+docker push TU_USUARIO/robot-lex-yacc:2.0
 ```
 
 ## Errores
 
 - **Léxico:** carácter no válido, por ejemplo `@`. Se reporta la línea.
-- **Sintaxis:** falta de `;`, llaves sin cerrar, etc. Se reporta la línea.
-- **Ejecución:** variable no definida, división entre cero, o un dron que
-  intenta bajar bajo el suelo. Se detiene la ejecución.
+- **Sintaxis:** falta de `;`, instrucción desconocida, etc. Se reporta la línea.
+- **Ejecución:** un dron que intenta bajar debajo del suelo. Se detiene la ejecución.
 
 Si hay errores léxicos o sintácticos, el programa no se ejecuta.

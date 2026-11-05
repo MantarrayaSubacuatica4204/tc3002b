@@ -1,83 +1,103 @@
 /*
- * robot.y - Analizador sintáctico (gramática) del lenguaje de robot/dron
+ * robot.y - Gramática del lenguaje de robot/dron.
+ *
+ * Cada instrucción se ejecuta directamente en su acción semántica.
+ * Para no ejecutar nada si hay errores, main.c hace dos pasadas:
+ *   1) solo revisa la sintaxis (ejecutar_ahora = 0);
+ *   2) si no hay errores, ejecuta el programa (ejecutar_ahora = 1).
+ *
  * Autor: Jaime Trujillo Ruiz
  */
-%code requires {
-#include "ast.h"
-}
-
 %{
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include "ast.h"
+#include <math.h>
 
 int yylex(void);
 void yyerror(const char *s);
 extern int yylineno;
-extern int errores_sintaxis;
 
-Node *programa = NULL;   /* raíz del árbol que construye el parser */
+int errores_sintaxis = 0;
+
+/* Estado del robot/dron: posición, altitud y rumbo en grados (0 = norte) */
+static int    ejecutar_ahora = 0;
+static double x = 0, y = 0, z = 0, rumbo = 0;
+
+#define PI 3.14159265358979323846
+
+void activar_ejecucion(int on) {
+    ejecutar_ahora = on;
+}
+
+static double limpia(double v) {
+    return fabs(v) < 1e-9 ? 0.0 : v;   /* evita imprimir "-0.00" */
+}
+
+static void mostrar(const char *etiqueta) {
+    if (!ejecutar_ahora) return;
+    printf("%s x=%.2f y=%.2f z=%.2f rumbo=%.1f grados\n",
+           etiqueta, limpia(x), limpia(y), limpia(z), limpia(rumbo));
+}
+
+static void mover(double distancia) {
+    if (!ejecutar_ahora) return;
+    double rad = rumbo * PI / 180.0;
+    x += distancia * sin(rad);
+    y += distancia * cos(rad);
+}
+
+static void girar(int dir, double grados) {
+    if (!ejecutar_ahora) return;
+    rumbo = fmod(rumbo + dir * grados, 360.0);
+    if (rumbo < 0) rumbo += 360.0;
+}
+
+static void subir(double distancia) {
+    if (ejecutar_ahora) z += distancia;
+}
+
+static void bajar(double distancia) {
+    if (!ejecutar_ahora) return;
+    if (z - distancia < 0) {
+        fprintf(stderr, "Error de ejecución: el dron no puede bajar debajo del suelo (z=%.2f)\n",
+                z - distancia);
+        exit(1);
+    }
+    z -= distancia;
+}
+
+void mostrar_final(void) {
+    mostrar("Posición final:");
+}
 %}
 
 %define parse.error verbose
 
 %union {
     double num;
-    char  *id;
     int    dir;
-    Node  *node;
 }
 
 %token <num> NUM
-%token <id>  ID
 %token <dir> DIRECCION
-%token AVANZAR RETROCEDER GIRAR SUBIR BAJAR REPETIR MOSTRAR
-
-%type <node> programa_ stmts stmt bloque expr
-
-/* Precedencia de operadores: de menor a mayor */
-%left '+' '-'
-%left '*' '/'
-%precedence UMENOS
+%token AVANZAR RETROCEDER GIRAR SUBIR BAJAR MOSTRAR
 
 %%
 
-programa_
-    : stmts                                  { programa = $1; }
+programa
+    : %empty
+    | programa instruccion
     ;
 
-stmts
-    : %empty                                 { $$ = NULL; }
-    | stmts stmt                             { $$ = lista_agregar($1, $2); }
-    ;
-
-stmt
-    : ID '=' expr ';'                        { $$ = nodo_asignar($1, $3); }
-    | AVANZAR expr ';'                       { $$ = nodo_unario(N_AVANZAR, $2); }
-    | RETROCEDER expr ';'                    { $$ = nodo_unario(N_RETROCEDER, $2); }
-    | GIRAR DIRECCION ';'                    { $$ = nodo_girar($2, NULL); }
-    | GIRAR DIRECCION expr ';'               { $$ = nodo_girar($2, $3); }
-    | SUBIR expr ';'                         { $$ = nodo_unario(N_SUBIR, $2); }
-    | BAJAR expr ';'                         { $$ = nodo_unario(N_BAJAR, $2); }
-    | REPETIR expr bloque                    { $$ = nodo_repetir($2, $3); }
-    | MOSTRAR ';'                            { $$ = nodo_simple(N_MOSTRAR); }
-    | error ';'                              { yyerrok; $$ = NULL; }
-    ;
-
-bloque
-    : '{' stmts '}'                          { $$ = nodo_bloque($2); }
-    ;
-
-expr
-    : NUM                                    { $$ = nodo_num($1); }
-    | ID                                     { $$ = nodo_var($1); }
-    | '(' expr ')'                           { $$ = $2; }
-    | '-' expr %prec UMENOS                  { $$ = nodo_neg($2); }
-    | expr '+' expr                          { $$ = nodo_bin('+', $1, $3); }
-    | expr '-' expr                          { $$ = nodo_bin('-', $1, $3); }
-    | expr '*' expr                          { $$ = nodo_bin('*', $1, $3); }
-    | expr '/' expr                          { $$ = nodo_bin('/', $1, $3); }
+instruccion
+    : AVANZAR NUM ';'              { mover($2); }
+    | RETROCEDER NUM ';'           { mover(-$2); }
+    | GIRAR DIRECCION ';'          { girar($2, 90); }
+    | GIRAR DIRECCION NUM ';'      { girar($2, $3); }
+    | SUBIR NUM ';'                { subir($2); }
+    | BAJAR NUM ';'                { bajar($2); }
+    | MOSTRAR ';'                  { mostrar("Posición:"); }
+    | error ';'                    { yyerrok; }
     ;
 
 %%

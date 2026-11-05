@@ -5,7 +5,6 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include "robot.tab.h"
 
 extern int errores_lexicos;
@@ -25,13 +24,11 @@ extern int errores_lexicos;
 "derecha"                               { yylval.dir = 1;  return DIRECCION; }
 "subir"                                 { return SUBIR; }
 "bajar"                                 { return BAJAR; }
-"repetir"                               { return REPETIR; }
 "mostrar"                               { return MOSTRAR; }
 
 [0-9]+("."[0-9]+)?                      { yylval.num = strtod(yytext, NULL); return NUM; }
-[a-zA-Z_][a-zA-Z0-9_]*                  { yylval.id = strdup(yytext); return ID; }
 
-"="|"+"|"-"|"*"|"/"|"("|")"|";"|"{"|"}" { return yytext[0]; }
+";"                                     { return yytext[0]; }
 
 .                                       {
     fprintf(stderr, "Error léxico en línea %d: carácter no válido '%s'\n", yylineno, yytext);
