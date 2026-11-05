@@ -4,7 +4,6 @@
 Jaime Trujillo Ruiz A01276139
 Fernanda Michelle Torres Aguilar A01067954
 Ximena Cantera Reséndiz A01277310
-**Curso:** Diseño de Compiladores
 
 Intérprete de un lenguaje sencillo para programar un robot o un dron. Usa
 **flex** (LEX) para el análisis léxico y **bison** (YACC) para el análisis
