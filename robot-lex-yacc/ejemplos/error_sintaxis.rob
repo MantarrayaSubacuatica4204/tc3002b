@@ -1,0 +1,3 @@
+# Error de sintaxis: falta el ';' después de avanzar
+avanzar 10
+girar derecha;

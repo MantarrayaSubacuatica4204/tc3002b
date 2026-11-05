@@ -1,0 +1,2 @@
+# Error léxico: el carácter @ no existe en el lenguaje
+avanzar 10 @;

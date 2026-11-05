@@ -1,0 +1,7 @@
+robot
+*.o
+robot.tab.c
+robot.tab.h
+lex.yy.c
+*.exe
+.git

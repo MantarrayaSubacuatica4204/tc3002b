@@ -1,0 +1,8 @@
+# Dron: despega a 20 m, avanza en triángulo y va bajando
+subir 20;
+repetir 3 {
+    avanzar 15;
+    girar izquierda 120;
+    bajar 5;
+}
+mostrar;
