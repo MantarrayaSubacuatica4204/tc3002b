@@ -67,27 +67,4 @@ make
 ./robot ejemplos/demo.rob
 ```
 
-## Subir la imagen a Docker Hub
-
-Reemplaza `TU_USUARIO` por tu usuario de Docker Hub:
-
-```bash
-docker login
-docker tag robot-lex-yacc:local TU_USUARIO/robot-lex-yacc:1.0
-docker push TU_USUARIO/robot-lex-yacc:1.0
-```
-
-Para que otra persona la ejecute:
-
-```bash
-docker run --rm TU_USUARIO/robot-lex-yacc:1.0 /app/ejemplos/dron.rob
-```
-
-## Errores
-
-- **Léxico:** carácter no válido, por ejemplo `@`. Se reporta la línea.
-- **Sintaxis:** falta de `;`, llaves sin cerrar, etc. Se reporta la línea.
-- **Ejecución:** variable no definida, división entre cero, o un dron que
-  intenta bajar bajo el suelo. Se detiene la ejecución.
-
 Si hay errores léxicos o sintácticos, el programa no se ejecuta.
