@@ -1,6 +1,9 @@
 # Intérprete robot/dron con LEX y YACC
 
-**Autor:** Jaime Trujillo Ruiz
+**Autores:**
+Jaime Trujillo Ruiz A01276139
+Fernanda Michelle Torres Aguilar A01067954
+Ximena Cantera Reséndiz A01277310
 **Curso:** Diseño de Compiladores
 
 Intérprete de un lenguaje sencillo para programar un robot o un dron. Usa
